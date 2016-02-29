@@ -7,10 +7,11 @@ outseq=[];
 while True:
     line = sys.stdin.readline();
     if not line:
+        if state>=0:
+            outseq=outseq+[[state,statecount]];
         break;
     line=str(line);
-    print line[0]=='\n';
-    if line[0]>='0' and line[0]<='9':
+    if line[0]>'9' or line[0]<'0':
         continue;
     statethis=int(line);
     if statethis==state:
