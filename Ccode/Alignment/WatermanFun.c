@@ -149,6 +149,24 @@ int Seq2Sseq(unsigned char *seq, int n, unsigned char **sseq, unsigned short **s
     return k;
 }
 
+int Sseq2Seq(unsigned char *sseq, unsigned short *sseq_num, int n, unsigned char **seq)
+{
+    int l=0;
+    int i,j;
+    for(i=0;i<n;i++){
+	l += sseq_num[i];
+    }
+    (*seq) = (unsigned char*)malloc(sizeof(unsigned char)*l);
+    l=0;
+    for(i=0;i<n;i++){
+	for(j=0;j<sseq_num[i];j++){
+	    *((*seq)+l) = sseq[i];
+	    l++;
+	}
+    }
+    return l;
+}
+
 void Malloc_Map_Compact(unsigned char* seq1, unsigned char* seq2, unsigned short* len1, unsigned short* len2, int l1, int l2, float*** map_score, unsigned char*** map_trace)
 {
     int i,j,k;
@@ -479,7 +497,7 @@ void SWA_Compact_Even(unsigned char* seq1, unsigned char* seq2, unsigned short* 
 /*bow_seq is malloced inside this function*/
 /*state 0 is reserved state here*/
 /*This function does the same thing with function Seq2Bow, but time cost of this function is higher*/
-int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
+int Seq2Bow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
 {
     int i,j;
     int w=m/k;
@@ -488,13 +506,14 @@ int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow
     n = a*k;
     if(l<1){
 	*bow_seq = NULL;
-	return;
+	return 0;
     }
     (*bow_seq) = (struct word_node*)malloc(sizeof(struct word_node)*l);
     /*Construct the length-k dictionary*/
     struct word_node_extend *dic;
     struct word_node_extend *dic_node;
-    struct word_node_extend *dic_last[STATE_MAX];
+    struct word_node_extend **dic_last;
+    dic_last = (struct word_node_extend**)malloc(sizeof(struct word_node_extend*)*STATE_MAX);
     dic = (struct word_node_extend*)malloc(sizeof(struct word_node_extend)*STATE_MAX);
     for(i=0;i<STATE_MAX;i++){
 	dic[i].next=NULL;
@@ -504,21 +523,22 @@ int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow
     unsigned char c;
     for(i=0;i<n;i++){
 	c=seq[i];
-	if(i - dic_last[i]->p * k < k){
-	    dic_last[i]->n += 1;
+	if(i - dic_last[c]->p * k < k){
+	    dic_last[c]->n += 1.0;
 	    continue;
 	}
 	dic_node = (struct word_node_extend*)malloc(sizeof(struct word_node_extend));
         dic_last[c]->next = dic_node;
 	dic_node->next = NULL;
-	dic_node->n = 1;
+	dic_node->n = 1.0;
 	dic_node->p = i/k;
 	dic_last[c] = dic_node;
     }
 
     /*Compute the length-m bag of words*/
     struct word_node *word_node;
-    struct word_node *word_last[l];
+    struct word_node **word_last;
+    word_last = (struct word_node**)malloc(sizeof(struct word_node*)*l);
     int p;
     int s,t;
     for(i=0;i<l;i++){
@@ -546,6 +566,7 @@ int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow
 		    word_last[j]->n += dic_node->n;
 		}
 	    }
+	    dic_node = dic_node->next;
 	}
     }
 
@@ -559,13 +580,15 @@ int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow
 	}
     }
     free(dic);
+    free(dic_last);
+    free(word_last);
     return l;
 }
 
 
 /*bow_seq is malloced inside this function*/
 /*state 0 is a reserved state in this function*/
-int Seq2Bow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
+int Seq2Bow_Slow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
 {
     int i,j;
     int w=m/k;
@@ -574,7 +597,7 @@ int Seq2Bow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
     n = t*k;
     if(l<1){
 	*bow_seq = NULL;
-	return;
+	return 0;
     }
     (*bow_seq) = (struct word_node*)malloc(sizeof(struct word_node)*l);
     /*Construct the dictionary*/
@@ -591,85 +614,59 @@ int Seq2Bow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
     for(i=0;i<n;i++){
 	c=seq[i];
 	if(i - dic_last[c]->p * k < k){
-	    dic_last[c]->n += 1;
+	    dic_last[c]->n += 1.0;
 	    continue;
 	}
 	dic_node = (struct word_node_extend*)malloc(sizeof(struct word_node_extend));
         dic_last[c]->next = dic_node;
 	dic_node->next = NULL;
-	dic_node->n = 1;
+	dic_node->n = 1.0;
 	dic_node->p = i/k;
 	dic_last[c] = dic_node;
     }
-
-    /*compute length-m bag of word*/
-    unsigned short count_this;
-    int h;
-    int s;
-    struct word_node *bow_last[l];
+    /*compute length-k bag og word*/
+    struct word_node *bow_seq_k;
+    bow_seq_k = (struct word_node*)malloc(sizeof(struct word_node)*t);
+    struct word_node **bow_last;
+    bow_last = (struct word_node**)malloc(sizeof(struct word_node*)*t);
     struct word_node *word_pointer;
-    struct word_node *bow_last_reserved[l];
-    for(i=0;i<l;i++){
-	bow_last[i] = *bow_seq+i;
-	bow_last_reserved[i] = *bow_seq+i;
-	(*bow_seq+i)->c = 0;
-	(*bow_seq+i)->next = NULL;
+    for(i=0;i<t;i++){
+	bow_seq_k[i].c = 0;
+        bow_seq_k[i].next = NULL;
+	bow_last[i] = bow_seq_k+i;
     }
-    for(i=1;i<STATE_MAX;i++){ 
-	/*for each state*/
-	/*Initialize*/
-	dic_node = dic[i].next;
-	if(dic_node==NULL)
-	    continue;
-	s = dic_node->p;
-	if(s<w){
-	    h=0;
-	    count_this=0;
-	    while(dic_node!=NULL&&dic_node->p<w){
-		count_this += dic_node->n;
-	        s = dic_node->p;
-		if(s+1<l){
-		    word_pointer = (struct word_node *)malloc(sizeof(struct word_node));
-		    bow_last[s+1]->next = word_pointer;
-		    word_pointer->n = dic_node->n;
-		    word_pointer->c = i;
-		    word_pointer->next = NULL;
-		    bow_last[s+1] = word_pointer;
-		}
-		dic_node = dic_node->next;
-	    }
-	    word_pointer = (struct word_node *)malloc(sizeof(struct word_node));
-	    bow_last[h]->next = word_pointer;
-	    word_pointer->n = count_this;
-	    word_pointer->c = i;
+    for(c=1;;c++){
+	dic_node = dic[c].next;
+	while(dic_node!=NULL){
+	    i = dic_node->p;
+	    word_pointer = (struct word_node*)malloc(sizeof(struct word_node));
+	    word_pointer->c = c;
+	    word_pointer->n = dic_node->n;
 	    word_pointer->next = NULL;
-	    bow_last[h] = word_pointer;
-	    bow_last_reserved[h] = word_pointer;
-	}
-	else{
-	    h = s-w+1;
-	    count_this = dic_node->n;
-	    word_pointer = (struct word_node *)malloc(sizeof(struct word_node));
-	    bow_last[h]->next = word_pointer;
-	    word_pointer->n = count_this;
-	    word_pointer->c = i;
-	    word_pointer->next = NULL;
-	    bow_last[h] = word_pointer;
-	    bow_last_reserved[h] = word_pointer;
-	    if(s+1<l){
-		word_pointer = (struct word_node *)malloc(sizeof(struct word_node));
-		bow_last[s+1]->next = word_pointer;
-		word_pointer->n = count_this;
-		word_pointer->c = i;
-		word_pointer->next = NULL;
-		bow_last[s+1] = word_pointer;
-	    }
+	    bow_last[i]->next = word_pointer;
+	    bow_last[i] = word_pointer;
 	    dic_node = dic_node->next;
 	}
-	/*count bag of words frequency one by one*/
-	while(dic_node!=NULL){
-	    /*ToBeFinished*/
-	}
+        if(c==STATE_MAX-1){
+	    break;
+        }
+    }
+
+    /*compute length-m bag of word*/
+    struct word_node *bow_seq_temp;
+    bow_seq_temp = (struct word_node*)malloc(sizeof(struct word_node)*l);
+    for(i=0;i<l;i++){
+	(*bow_seq+i)->c = 0;
+        (*bow_seq+i)->n = 0;
+	(*bow_seq+i)->next = NULL;
+	bow_seq_temp[i].next = NULL;
+    }
+    for(i=0;i<w;i++){ 
+	Bow_Plus(*bow_seq,bow_seq_k+i,*bow_seq);
+    }
+    for(i=1;i<l;i++){
+	Bow_Plus((*bow_seq+i-1),bow_seq_k+i+w-1,bow_seq_temp+i);
+	Bow_Minus(bow_seq_temp+i,bow_seq_k+i-1,(*bow_seq+i));
     }
 
     /*free the memory in this function*/
@@ -682,6 +679,15 @@ int Seq2Bow(unsigned char *seq, int n, int m, int k, struct word_node** bow_seq)
 	}
     }
     free(dic);
+    for(i=0;i<t;i++){
+	Free_Bow(bow_seq_k+i);
+    }
+    free(bow_seq_k);
+    free(bow_last);
+    for(i=0;i<l;i++){
+	Free_Bow(bow_seq_temp+i);
+    }
+    free(bow_seq_temp);
     return l;
 }
 
@@ -728,7 +734,7 @@ float MatchScore_Bow_Resemblance(struct word_node *bow1, struct word_node *bow2,
 	}
     }
     float ans;
-    ans=a/b;
+    ans=3.0*a/b-1.0;
     return ans;
 }
 
@@ -736,6 +742,8 @@ float MatchScore_Bow_Resemblance_ByNumber(struct word_node *bow1, struct word_no
 {
     struct word_node *p1;
     struct word_node *p2;
+    p1 = bow1->next;
+    p2 = bow2->next;
     /*a is number of intersection and b is union*/
     float a,b;
     a=0.0;
@@ -772,7 +780,56 @@ float MatchScore_Bow_Resemblance_ByNumber(struct word_node *bow1, struct word_no
 	}
     }
     float ans;
-    ans=a/b;
+    ans=3.0*a/b-1.0;
+    return ans;
+}
+
+/*void *opt is a float pointer here, the value is the baseline*/
+float MatchScore_Bow_Resemblance_ByNumber_Baseline(struct word_node *bow1, struct word_node *bow2, void *opt)
+{
+    struct word_node *p1;
+    struct word_node *p2;
+    p1 = bow1->next;
+    p2 = bow2->next;
+    /*a is number of intersection and b is union*/
+    float bl;
+    bl = *((float*)opt);
+    float a,b;
+    a=0.0;
+    b=0.0;
+    while(p1!=NULL&&p2!=NULL){
+	if(p1->c==p2->c){
+	    a += SWF_MIN(p1->n,p2->n) + bl;
+	    b += SWF_MAX(p1->n,p2->n) + bl;
+	    p1 = p1->next;
+	    p2 = p2->next;
+	    continue;
+	}
+	if(p1->c < p2->c){
+	    b += p1->n + bl;
+	    p1 = p1->next;
+	    continue;
+	}
+	if(p1->c > p2->c){
+	    b += p2->n + bl;
+	    p2 = p2->next;
+	    continue;
+	}
+    }
+    if(p1!=NULL){
+	while(p1!=NULL){
+	    b += p1->n + bl;
+	    p1 = p1->next;
+	}
+    }
+    if(p2!=NULL){
+	while(p2!=NULL){
+	    b += p2->n + bl;
+	    p2 = p2->next;
+	}
+    }
+    float ans;
+    ans=3.0*a/b-1.0;
     return ans;
 }
 
@@ -781,25 +838,28 @@ void SWA_Bow_Even(struct word_node* bow_seq1, struct word_node* bow_seq2, int n1
     int i,j;
     int np1=n1+1;
     int np2=n2+1;
+    int npw1=n1+w;
+    int npw2=n2+w;
     int wminus1=w-1;
     /*Initialize*/
-    for(i=0;i<np1;i++){
+    for(i=0;i<npw1;i++){
 	for(j=0;j<w;j++){
 	    map_score[j][i]=0;
 	    map_trace[j][i]=0;
 	}
     }
     for(i=0;i<w;i++){
-	for(j=0;j<np2;j++){
+	for(j=0;j<npw2;j++){
 	    map_score[j][i]=0;
 	    map_trace[j][i]=0;
 	}
     }
     /*update the matrix*/
-    for(i=w;i<np2;i++){
+    for(i=w;i<npw2;i++){
+        /*printf("%d\n",i);*/
 	int iminusw=i-w;
 	int iminus1=i-1;
-	for(j=w;j<np1;j++){
+	for(j=w;j<npw1;j++){
 	    int jminusw=j-w;
 	    int jminus1=j-1;
 	    float scoretemp;
@@ -840,6 +900,364 @@ void Free_Bow(struct word_node *bow)
     }
     return;
 }
+
+void Bow_PlusNumber(struct word_node *bow_in, float addvalue, struct word_node *bow_out)
+{
+    if(bow_out==bow_in){
+	struct word_node *nodethis;
+	nodethis = bow_in->next;
+	while(nodethis!=NULL){
+	    nodethis->n += addvalue;
+	}
+    }
+    else{
+	struct word_node *nodethis;
+	struct word_node *nodenew;
+	struct word_node *nodelast;
+	nodethis = bow_in->next;
+	nodelast = bow_out;
+	while(nodethis!=NULL){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->n += nodethis->n+addvalue;
+	    nodenew->c = nodethis->c;
+	    nodenew->next = NULL;
+	    nodelast->next = nodenew;
+	    nodelast = nodenew;
+	}
+    }
+    return;
+}
+
+/*Add 2 bow structure into one bow structure*/
+void Bow_Plus(struct word_node *bow_in1, struct word_node *bow_in2, struct word_node *bow_out)
+{
+    struct word_node nodeout;
+    struct word_node *bow_outtemp=NULL;
+    if(bow_out==bow_in1||bow_out==bow_in2){
+	bow_outtemp = bow_out;
+	bow_out = &nodeout;
+    }
+    struct word_node *lasto;
+    struct word_node *nodenew;
+    struct word_node *p1;
+    struct word_node *p2;
+    lasto = bow_out;
+    p1 = bow_in1->next;
+    p2 = bow_in2->next;
+    while(p1!=NULL&&p2!=NULL){
+	if(p1->c==p2->c){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p1->c;
+	    nodenew->n = p1->n+p2->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p1 = p1->next;
+	    p2 = p2->next;
+	    continue;
+	}
+	if(p1->c<p2->c){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p1->c;
+	    nodenew->n = p1->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p1 = p1->next;
+	    continue;
+	}
+	if(p1->c>p2->c){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p2->c;
+	    nodenew->n = p2->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p2 = p2->next;
+	    continue;
+	}
+    }
+    if(p1!=NULL){
+	while(p1!=NULL){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p1->c;
+	    nodenew->n = p1->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p1 = p1->next;
+	}
+    }
+    if(p2!=NULL){
+	while(p2!=NULL){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p2->c;
+	    nodenew->n = p2->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p2 = p2->next;
+	}
+    }
+    if(bow_outtemp==NULL){
+	return;
+    }
+    else{
+        if(bow_outtemp==bow_in1){
+	    Free_Bow(bow_in1);
+	    bow_in1->next = nodeout.next;
+	    return;
+	}
+	else{
+	    Free_Bow(bow_in2);
+	    bow_in2->next = nodeout.next;
+	    return;
+	}
+    }
+}
+
+/*bow3=bow1-bow2*/
+void Bow_Minus(struct word_node* bow_in1, struct word_node* bow_in2, struct word_node* bow_out)
+{
+    struct word_node nodeout;
+    struct word_node *bow_outtemp=NULL;
+    if(bow_out==bow_in1||bow_out==bow_in2){
+	bow_outtemp = bow_out;
+	bow_out = &nodeout;
+    }
+    struct word_node *lasto;
+    struct word_node *nodenew;
+    struct word_node *p1;
+    struct word_node *p2;
+    lasto = bow_out;
+    p1 = bow_in1->next;
+    p2 = bow_in2->next;
+    while(p1!=NULL&&p2!=NULL){
+	if(p1->c==p2->c){
+	    if( p1->n - p2->n > Fre_Zero ){
+		nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+		nodenew->c = p1->c;
+		nodenew->n = p1->n-p2->n;
+		nodenew->next = NULL;
+		lasto->next = nodenew;
+		lasto = nodenew;
+	    }
+	    p1 = p1->next;
+	    p2 = p2->next;
+	    continue;
+	}
+	if(p1->c<p2->c){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p1->c;
+	    nodenew->n = p1->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p1 = p1->next;
+	    continue;
+	}
+	if(p1->c>p2->c){
+	    p2 = p2->next;
+	    continue;
+	}
+    }
+    if(p1!=NULL){
+	while(p1!=NULL){
+	    nodenew = (struct word_node*)malloc(sizeof(struct word_node));
+	    nodenew->c = p1->c;
+	    nodenew->n = p1->n;
+	    nodenew->next = NULL;
+	    lasto->next = nodenew;
+	    lasto = nodenew;
+	    p1 = p1->next;
+	}
+    }
+    if(bow_outtemp==NULL){
+	return;
+    }
+    else{
+        if(bow_outtemp==bow_in1){
+	    Free_Bow(bow_in1);
+	    bow_in1->next = nodeout.next;
+	    return;
+	}
+	else{
+	    Free_Bow(bow_in2);
+	    bow_in2->next = nodeout.next;
+	    return;
+	}
+    }
+}
+
+/*Alignment pairs are malloced inside this function*/
+/* *align is father node, malloced outside.*/
+void Trace_Bow_Even(unsigned char **map_trace, int w, int p1, int p2, struct pair_node *align)
+{
+    align->p1 = p1;
+    align->p2 = p2;
+    align->next = NULL;
+    struct pair_node *pn;
+    while(1){
+	if(map_trace[p2][p1]==0)
+	    break;
+	if(map_trace[p2][p1]==1){
+	    pn = (struct pair_node*)malloc(sizeof(struct pair_node));
+	    p2 -= w;
+	    p1 -= w;
+	    pn->p1 = p1;
+	    pn->p2 = p2;
+	    pn->next = align->next;
+	    align->next = pn;
+	    continue;
+	}
+	if(map_trace[p2][p1]==2){
+	    p1 -= 1;
+	    continue;
+	}
+	if(map_trace[p2][p1]==3){
+	    p2 -= 1;
+	    continue;
+	}
+    }
+    return;
+}
+
+
+void Print_Alignment_Bow(struct pair_node *align, unsigned char *seq1, unsigned char *seq2, int m, int k, FILE *outfile)
+{
+    if(align->next==NULL){
+	return;
+    }
+    int w=m/k;
+    int p1,p2;
+    p1 = align->next->p1*k;
+    p2 = align->next->p2*k;
+    int s1,t1;
+    int s2,t2;
+    struct pair_node *pn;
+    pn = align->next;
+    int i;
+    fprintf(outfile,"\n%d",p2);
+    while(pn!=NULL){
+	s1 = pn->p1*k;
+	s2 = pn->p2*k;
+	for(i=p1;i<s1;i++){
+	    fprintf(outfile,"\n%c,%c",State2Char(seq1[i]),'-');
+	}
+	for(i=p2;i<s2;i++){
+	    fprintf(outfile,"\n%c,%c",'-',State2Char(seq2[i]));
+	}
+        fprintf(outfile,"\n(");
+	for(i=0;i<m;i++){
+	    fprintf(outfile,"%c ",State2Char(seq1[s1+i]));
+	}
+	fprintf(outfile,")  (");
+	for(i=0;i<m;i++){
+	    fprintf(outfile,"%c ",State2Char(seq2[s2+i]));
+	}
+	fprintf(outfile,")");
+	p1 = s1+m;
+	p2 = s2+m;
+        pn = pn->next;
+    }
+    fprintf(outfile,"\n");
+    return;
+}
+
+
+void Trace_Even(unsigned char **map_trace, int p1, int p2, struct pair_node *align)
+{
+    align->p1 = p1;
+    align->p2 = p2;
+    align->next = NULL;
+    struct pair_node *pn;
+    while(1){
+	if(map_trace[p2][p1]==0)
+	    break;
+	if(map_trace[p2][p1]==1){
+	    pn = (struct pair_node*)malloc(sizeof(struct pair_node));
+	    p1 -= 1;
+	    p2 -= 1;
+	    pn->p1 = p1;
+	    pn->p2 = p2;
+	    pn->next = align->next;
+	    align->next = pn;
+	    continue;
+	}
+	if(map_trace[p2][p1]==2){
+	    p1 -= 1;
+	    continue;
+	}
+	if(map_trace[p2][p1]==3){
+	    p2 -= 1;
+	    continue;
+	}
+    }
+    return;
+}
+
+void Print_Alignment_Even(struct pair_node *align, unsigned char *seq1, unsigned char *seq2, FILE *outfile)
+{
+    int i;
+    int p1,p2;
+    int s1,s2;
+    align = align->next;
+    p1 = align->p1;
+    p2 = align->p2;
+    while(align!=NULL){
+	s1 = align->p1;
+	s2 = align->p2;
+	for(i=p1;i<s1;i++){
+	    fprintf(outfile,"%c,%c\n",State2Char(seq1[i]),'-');
+	}
+	for(i=p2;i<s2;i++){
+	    fprintf(outfile,"%c,%c\n",'-',State2Char(seq2[i]));
+	}
+	fprintf(outfile,"%c,%c\n",State2Char(seq1[s1]),State2Char(seq2[s2]));
+        p1 = s1+1;
+        p2 = s2+1;
+	align = align->next;
+    }
+    return;
+}
+
+void Print_Alignment_Sseq_Even(struct pair_node *align, unsigned char *sseq1, unsigned char *sseq2, unsigned short *sseq1_num, unsigned short *sseq2_num, FILE *outfile)
+{
+    int i;
+    int p1,p2;
+    int s1,s2;
+    align = align->next;
+    p1 = align->p1;
+    p2 = align->p2;
+    while(align!=NULL){
+	s1 = align->p1;
+	s2 = align->p2;
+	for(i=p1;i<s1;i++){
+	    fprintf(outfile,"%c,%c\t%d,%d\n",State2Char(sseq1[i]),'-',sseq1_num[i],0);
+	}
+	for(i=p2;i<s2;i++){
+	    fprintf(outfile,"%c,%c\t%d,%d\n",'-',State2Char(sseq2[i]),0,sseq2_num[i]);
+	}
+	fprintf(outfile,"%c,%c\t%d,%d\n",State2Char(sseq1[s1]),State2Char(sseq2[s2]),sseq1_num[s1],sseq2_num[s2]);
+        p1 = s1+1;
+        p2 = s2+1;
+	align = align->next;
+    }
+    return;
+}
+
+void Free_Alignment(struct pair_node *align)
+{
+    struct pair_node *pn;
+    align = align->next;
+    while(align!=NULL){
+        pn = align;
+	align = align->next;
+	free(pn);
+    }
+    return;
+}
+
 
 
 

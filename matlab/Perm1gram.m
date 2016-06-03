@@ -1,6 +1,7 @@
-function [ SeqPerm, Fre ] = Perm1gram( Seq )
+function [ SeqPerm, Fre ] = Perm1gram( Seq, m )
 %PERM1GRAM Summary of this function goes here
 %   Detailed explanation goes here
+rng('shuffle');
 N=length(Seq);
 Dic=unique(sort(Seq));
 Fre=zeros(length(Dic),length(Dic));
@@ -16,7 +17,7 @@ Fre=Fre./repmat(sum(Fre,2),1,length(Dic));
 SeqPerm=Seq;
 SeqPerm(1)=Seq(randi(N));
 
-for i=2:N
+for i=2:m
     c=SeqPerm(i-1);
     v=find(Dic==c);
     vnew=mnrnd(1,Fre(v,:));
