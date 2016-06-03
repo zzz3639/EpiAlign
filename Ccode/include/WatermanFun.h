@@ -1,1 +1,1 @@
-/home/zzz/EpiBLAST/Ccode/Alignment/WatermanFun.h
+../Alignment/WatermanFun.h
