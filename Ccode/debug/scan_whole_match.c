@@ -12,6 +12,10 @@
 #define record_peak 3
 #define th_peak 0.25
 
+float MatchScore_Naive_This(unsigned char a, unsigned char b, int i, int j, void *opt)
+{
+    return (a==b)?2.0:-2.0;
+}
 
 void Remove_Peak(float **maxline, int n, int *L, int h, int p, int l2)
 {
@@ -49,7 +53,7 @@ void Find_Peak(float **maxline, int n, int *L, int *chr, int *pos)
 int main(int argc, char **argv)
 {
     if(argc<3){
-	printf("\n./run filelist1 filelist2 parameters\n");
+	printf("\n./run filelist filelistrand parameters remapping\n");
         return 1;
     }
 /*read parameters*/
@@ -157,7 +161,17 @@ int main(int argc, char **argv)
 	lr[t] = Seq2Sseq(seq_full_temp,lfull_rand[t],sseq_rand+t,sseq_num_rand+t);
 	free(seq_full_temp);
     }
-/*Do the alignment on each sort sequences defined by m and k*/
+/*Compute Cumsum of each chromesome*/
+    int **sseq_cumnum;
+    sseq_cumnum = (int**)malloc(sizeof(int*)*nf);
+    for(t=0;t<nf;t++){
+	sseq_cumnum[t] = (int*)malloc(sizeof(int)*(lf[t]+1));
+	sseq_cumnum[t][0] = 0;
+	for(i=0;i<lf[t];i++){
+	    sseq_cumnum[t][i+1] = sseq_cumnum[t][i] + sseq_num[t][i];
+	}
+    }
+/*Do the alignment on each short sequences defined by m and k*/
     unsigned char *seq;
     unsigned char *seq2;
     seq2 = (unsigned char*)malloc(sizeof(unsigned char)*m);
@@ -215,7 +229,7 @@ int main(int argc, char **argv)
 		    map_trace_rand[i] = (unsigned char*)malloc(sizeof(unsigned char)*(l2+1));
 		}
 		/*Do alignment*/
-		SWA_Even(sseq2, sseq_rand[h], l2, lr[h], MatchScore_Naive, alpha, NULL, NULL, map_score_rand, map_trace_rand);
+		SWA_Even(sseq2, sseq_rand[h], l2, lr[h], MatchScore_Naive_This, GapScore_Naive, alpha, NULL, NULL, map_score_rand, map_trace_rand);
 		/*compute maximum matching score*/
 		for(i=0;i<lr[h]+1;i++){
 		    maxline_rand[h][i] = 0.0;
@@ -267,7 +281,7 @@ int main(int argc, char **argv)
 		    map_trace[i] = (unsigned char*)malloc(sizeof(unsigned char)*(l2+1));
 		}
 		/*Do alignment*/
-		SWA_Even(sseq2, sseq[h], l2, lf[h], MatchScore_Naive, alpha, NULL, NULL, map_score, map_trace);
+		SWA_Even(sseq2, sseq[h], l2, lf[h], MatchScore_Naive_This, GapScore_Naive, alpha, NULL, NULL, map_score, map_trace);
 		/*compute maximum matching score*/
 		for(i=0;i<lf[h]+1;i++){
 		    maxline[h][i] = 0.0;
@@ -294,7 +308,7 @@ int main(int argc, char **argv)
 				pos_l2 = i;
 			    }
 			}
-			fprintf(out_region,"chr:%d pos:%d\n score:%f\n",h,pos_chr_this,maxline_trace[h][pos_chr_this]-score_best_rand);
+			fprintf(out_region,"chr:%d pos:%d\n score:%f\n",h,sseq_cumnum[h][pos_chr_this],maxline_trace[h][pos_chr_this]-score_best_rand);
 			Trace_Even(map_trace,pos_l2,pos_chr_this,&align_this);
 			Print_Alignment_Sseq_Even(&align_this,sseq2,sseq[h],sseq2_num,sseq_num[h],out_region);
 			Free_Alignment(&align_this);
@@ -354,6 +368,20 @@ int main(int argc, char **argv)
     }
     free(maxline_rand);
     free(DicState);
+    for(i=0;i<nf;i++){
+	free(sseq[i]);
+        free(sseq_num[i]);
+        free(sseq_cumnum[i]);
+    }
+    free(sseq);
+    free(sseq_num);
+    free(sseq_cumnum);
+    for(i=0;i<nr;i++){
+	free(sseq_rand[i]);
+	free(sseq_num_rand[i]);
+    }
+    free(sseq_rand);
+    free(sseq_num_rand);
     return 1;
 }
 

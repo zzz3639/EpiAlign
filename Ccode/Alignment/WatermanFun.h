@@ -40,8 +40,8 @@ struct pair_node
     struct pair_node *next;
 };
 
-typedef float (*MatchingFunction)(unsigned char, unsigned char, void*);
-typedef float (*GapFunction)(float, void*);
+typedef float (*MatchingFunction)(unsigned char, unsigned char, int, int, void*);
+typedef float (*GapFunction)(float, int, void*);
 typedef float (*MatchingFunction_BOW)(struct word_node*, struct word_node*, void*);
 
 /*Convert chromatin state to human comprehensible characters*/
@@ -53,12 +53,18 @@ int Seq2Sseq(unsigned char*, int, unsigned char**, unsigned short**);
 /*Convert compact sequence to state sequence, output array is malloced inside this function*/
 int Sseq2Seq(unsigned char*, unsigned short*, int, unsigned char **);
 
-float MatchScore_Naive(unsigned char, unsigned char, void*);
-float MatchScore_log(unsigned char, unsigned char, void*);
-void SWA_Even(unsigned char*, unsigned char*, int, int, MatchingFunction, float, struct Map_State_Even*, void*, float**, unsigned char**);
+float MatchScore_Naive(unsigned char, unsigned char, int, int, void*);
+float MatchScore_Sqrt(unsigned char, unsigned char, int, int, void*);
+float GapScore_Naive(float, int, void*);
+/*In this function, gap penalty is alpha*l*/
+void SWA_Even(unsigned char*, unsigned char*, int, int, MatchingFunction, GapFunction, float, struct Map_State_Even*, void*, float**, unsigned char**);
 void Trace_Even(unsigned char**, int, int, struct pair_node*);
 void Print_Alignment_Even(struct pair_node*, unsigned char*, unsigned char*, FILE *);
 void Print_Alignment_Sseq_Even(struct pair_node*, unsigned char*, unsigned char*, unsigned short*, unsigned short*, FILE *);
+
+/*In this function, gap penalty is alpha*l+beta*/
+void SWA_Linear(unsigned char*, unsigned char*, int, int, MatchingFunction, GapFunction, float, float, void*, float***, unsigned char***);
+void Trace_Linear(unsigned char***, int, int, int, struct pair_node*);
 
 void Malloc_Map_Compact(unsigned char*, unsigned char*, unsigned short*, unsigned short*, int, int, float***, unsigned char ***);
 void Free_Map(int, float**, unsigned char **);

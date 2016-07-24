@@ -10,14 +10,19 @@ unsigned char Char2State(char c)
     return (c>'`')?(unsigned char)c-(unsigned char)96:(unsigned char)c-(unsigned char)38;
 }
 
-float MatchScore_Naive(unsigned char a, unsigned char b, void* opt)
+float MatchScore_Naive(unsigned char a, unsigned char b, int i, int j, void* opt)
 {
-    return (a==b)?2.0:-1.0;
+    return (a==b)?2.0:-2.0;
+}
+
+float GapScore_Naive(float alpha, int i, void *opt)
+{
+    return alpha;
 }
 
 /*Smith-Waterman function for even gap penalty*/
 /*By default, seq1 is query and seq2 is database*/
-void SWA_Even(unsigned char* seq1, unsigned char* seq2, int l1, int l2, MatchingFunction MF, float alpha, struct Map_State_Even* map_init, void* opt, float** map_score, unsigned char** map_trace)
+void SWA_Even(unsigned char* seq1, unsigned char* seq2, int l1, int l2, MatchingFunction MF, GapFunction GF, float alpha, struct Map_State_Even* map_init, void* opt, float** map_score, unsigned char** map_trace)
 {
     int i,j;
     int lp1=l1+1;
@@ -45,7 +50,7 @@ void SWA_Even(unsigned char* seq1, unsigned char* seq2, int l1, int l2, Matching
 	iloop=i-1;
 	for(j=1;j<lp1;j++){
 	    jloop=j-1;
-	    float matchthis=MF(seq1[jloop],seq2[iloop],opt);
+	    float matchthis=MF(seq1[jloop],seq2[iloop],jloop,iloop,opt);
 	    float scoretemp;
 	    map_trace[i][j]=0;
 	    map_score[i][j]=0;
@@ -56,13 +61,13 @@ void SWA_Even(unsigned char* seq1, unsigned char* seq2, int l1, int l2, Matching
 		map_trace[i][j] = 1;
 	    }
 	    /*deletion in sequence 1*/
-	    scoretemp = map_score[i][jloop] - alpha;
+	    scoretemp = map_score[i][jloop] - GF(alpha,jloop,opt);
 	    if(scoretemp>map_score[i][j]){
 		map_score[i][j] = scoretemp;
 		map_trace[i][j] = 2;
 	    }
 	    /*deletion in sequence 2*/
-	    scoretemp = map_score[iloop][j] - alpha;
+	    scoretemp = map_score[iloop][j] - GF(alpha,iloop,opt);
 	    if(scoretemp>map_score[i][j]){
 		map_score[i][j] = scoretemp;
 		map_trace[i][j] = 3;
@@ -421,10 +426,10 @@ void SWA_Compact_Even(unsigned char* seq1, unsigned char* seq2, unsigned short* 
 		int iminusr1=i-r1;
 		score_d1 = map_score[i][jminus1] - alpha;
 		if(r1>=r2){
-		    score_m = map_score[iminusr2][jminusr2] + r2*MF(seq1[t1],seq2[t2],opt);
+		    score_m = map_score[iminusr2][jminusr2] + r2*MF(seq1[t1],seq2[t2],t1,t2,opt);
 		}
 		else{
-		    score_m = map_score[iminusr1][t1] + r1*MF(seq1[t1],seq2[t2],opt);
+		    score_m = map_score[iminusr1][t1] + r1*MF(seq1[t1],seq2[t2],t1,t2,opt);
 		}
 		if(r1==len1[t1]){
 		    t1=t1+1;
@@ -457,10 +462,10 @@ void SWA_Compact_Even(unsigned char* seq1, unsigned char* seq2, unsigned short* 
 		r1=len1[jminus1];
 		score_d1 = map_score[i][jminus1] - r1*alpha;
 		if(r1>=r2){
-		    score_m = map_score[iminusr2][jminusr2] + r2*MF(seq1[jminus1],seq2[t2],opt);
+		    score_m = map_score[iminusr2][jminusr2] + r2*MF(seq1[jminus1],seq2[t2],jminus1,t2,opt);
 		}
 		else{
-		    score_m = map_score[iminusr1][jminus1] + r1*MF(seq1[jminus1],seq2[t2],opt);
+		    score_m = map_score[iminusr1][jminus1] + r1*MF(seq1[jminus1],seq2[t2],jminus1,t2,opt);
 		}
 		if(M[iminus1]){
 		    score_d2 = map_score[iminus1][Index1[j]] - alpha;
@@ -1258,7 +1263,56 @@ void Free_Alignment(struct pair_node *align)
     return;
 }
 
+/*layer 4(value of map_trace_z) is the empty layer*/
+void SWA_Linear(unsigned char *seq1, unsigned char *seq2, int l1, int l2, MatchingFunction MF, GapFunction GF, float alpha, float beta, void *opt, float ***map_score, unsigned char ***map_trace)
+{
+    int lp1;
+    int lp2;
+    lp1 = l1+1;
+    lp2 = l2+1;
+    int i,j,k;
+    /*Initialize*/
+    for(k=0;k<4;k++){
+	for(i=0;i<lp1;i++){
+	    map_score[k][0][i] = 0.0;
+	    map_trace[k][0][i] = 4;
+	}
+    }
+    for(k=0;k<4;k++){
+	for(j=0;j<lp2;j++){
+	    map_score[k][j][0] = 0.0;
+	    map_trace[k][j][0] = 4;
+	}
+    }
+    /*Do dynamic programming*/
+    int zt;
+    float score;
+    int ip,jp;
+    for(j=0;j<lp2;j++){
+	jp = j+1;
+	for(i=0;i<lp1;i++){
+	    ip = i+1;
+	    /*k = 0*/
+	    score = MF(seq1[i],seq2[j],i,j,opt);
+	    /*k = 1*/
+	    if(map_score[0][jp][i]>map_score[1][jp][i]){
+	    }
+	    else{
+	    }
+	    /*k = 2*/
+            if(map_score[0][j][ip]>map_score[2][j][ip]){
+	    }
+	    else{
+	    }
+	    /*k = 3*/
+	}
+    }
+    return;
+}
 
+void Trace_Linear(unsigned char ***map_trace, int p1, int p2, int z, struct pair_node *align)
+{
+}
 
 
 
