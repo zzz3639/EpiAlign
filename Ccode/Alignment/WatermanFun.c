@@ -15,7 +15,7 @@ float MatchScore_Naive(unsigned char a, unsigned char b, int i, int j, void* opt
     return (a==b)?2.0:-2.0;
 }
 
-float GapScore_Naive(float alpha, int i, void *opt)
+float GapScore_Naive(float alpha, int i, char s, void *opt)
 {
     return alpha;
 }
@@ -61,13 +61,13 @@ void SWA_Even(unsigned char* seq1, unsigned char* seq2, int l1, int l2, Matching
 		map_trace[i][j] = 1;
 	    }
 	    /*deletion in sequence 1*/
-	    scoretemp = map_score[i][jloop] - GF(alpha,jloop,opt);
+	    scoretemp = map_score[i][jloop] - GF(alpha,jloop,'1',opt);
 	    if(scoretemp>map_score[i][j]){
 		map_score[i][j] = scoretemp;
 		map_trace[i][j] = 2;
 	    }
 	    /*deletion in sequence 2*/
-	    scoretemp = map_score[iloop][j] - GF(alpha,iloop,opt);
+	    scoretemp = map_score[iloop][j] - GF(alpha,iloop,'2',opt);
 	    if(scoretemp>map_score[i][j]){
 		map_score[i][j] = scoretemp;
 		map_trace[i][j] = 3;

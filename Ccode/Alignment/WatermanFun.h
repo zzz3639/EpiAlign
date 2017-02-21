@@ -41,7 +41,7 @@ struct pair_node
 };
 
 typedef float (*MatchingFunction)(unsigned char, unsigned char, int, int, void*);
-typedef float (*GapFunction)(float, int, void*);
+typedef float (*GapFunction)(float, int, char, void*);
 typedef float (*MatchingFunction_BOW)(struct word_node*, struct word_node*, void*);
 
 /*Convert chromatin state to human comprehensible characters*/
@@ -55,7 +55,7 @@ int Sseq2Seq(unsigned char*, unsigned short*, int, unsigned char **);
 
 float MatchScore_Naive(unsigned char, unsigned char, int, int, void*);
 float MatchScore_Sqrt(unsigned char, unsigned char, int, int, void*);
-float GapScore_Naive(float, int, void*);
+float GapScore_Naive(float, int, char, void*);
 /*In this function, gap penalty is alpha*l*/
 void SWA_Even(unsigned char*, unsigned char*, int, int, MatchingFunction, GapFunction, float, struct Map_State_Even*, void*, float**, unsigned char**);
 void Trace_Even(unsigned char**, int, int, struct pair_node*);

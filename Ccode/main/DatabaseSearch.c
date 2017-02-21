@@ -41,7 +41,7 @@ void Find_Peak(float **maxline, int n, int *L, int *chr, int *pos)
 int main(int argc, char **argv)
 {
     if(argc<2){
-	printf("\nUsage:\n./run Paths Para_search Para_align\n");
+	printf("\nUsage:\n./run Paths_Search Para_Search Para_align\n");
 	return 1;
     }
 /*read searching parameters from file*/
@@ -300,8 +300,8 @@ int main(int argc, char **argv)
 			}
 		    }
 		    Trace_Even(map_trace,pos_l1,pos_chr_this,&align_this);
-		    fprintf(out_region,"chr:%d pos:%d-%d\nquery:%d-%d\n score:%f\n",h,sseq_cumnum[h][align_this.next->p2],sseq_cumnum[h][pos_chr_this]-1,sseq_query_cumnum[t][align_this.next->p1],sseq_query_cumnum[t][pos_l1],maxline_trace[h][pos_chr_this]-score_best_rand);
-		    Print_Alignment_Sseq_Even(&align_this,sseq2,sseq[h],sseq2_num,sseq_num[h],out_region);
+		    fprintf(out_region,"chr:%d pos:%d-%d\nquery:%d-%d\nscore:%f\n",h,sseq_cumnum[h][align_this.next->p2],sseq_cumnum[h][pos_chr_this]-1,sseq_query_cumnum[t][align_this.next->p1],sseq_query_cumnum[t][pos_l1]-1,maxline_trace[h][pos_chr_this]-score_best_rand);
+		    Print_Alignment_Sseq_Even(&align_this,sseq1,sseq[h],sseq1_num,sseq_num[h],out_region);
 		    Free_Alignment(&align_this);
 		}
 		else{

@@ -17,7 +17,7 @@ void Custom_Free(void*);
 float Custom_MatchingFunction(unsigned char, unsigned char, int, int, void*);
 
 
-float Custom_GapFunction(float, int, void*);
+float Custom_GapFunction(float, int, char, void*);
 
 
 #endif

@@ -8,8 +8,8 @@
 
 int main(int argc, char **argv)
 {
-    if(argc<1){
-	printf("\n./run parameters\n");
+    if(argc<2){
+	printf("\n./run Para_Cut\n");
         printf("Parameters:\nm\nk\nlist path\ndatabase path\noutput folder path\n");
         return 1;
     }
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	for(i=0;i<lf[t];i++){
 	    lfull[t] += sseq_num[t][i];
 	}
-	printf("\n%d %d\n",t,lfull[t]);
+	/*printf("\n%d %d\n",t,lfull[t]);*/
     }
 
 /*Compute Cumsum of each chromesome*/
