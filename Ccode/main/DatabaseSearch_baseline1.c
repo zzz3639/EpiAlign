@@ -383,6 +383,7 @@ int main(int argc, char **argv)
     int l_db_this;
     char annonum[FileNameLength_MAX];
     for(t=0;t<nq;t++){
+        printf("\n\nRunning, this is query seq %d\n\n",t);
 	name_fullpath[0] = '\0';
 	strcat(name_fullpath,Po);
 	strcat(name_fullpath,queries[t]);
@@ -401,6 +402,7 @@ int main(int argc, char **argv)
 	    }
 	}
         while(boq<=cq[t]){
+            printf("Segment %d\n",aiq);
 	    /*initialize*/
 	    /*find state sequence of this region*/
             for(i=aoq;i<boq;i++){
