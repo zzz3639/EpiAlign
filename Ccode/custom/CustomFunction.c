@@ -1,1 +1,1 @@
-./CustomFunction.Attention.c
+./CustomFunction.Naive.c
