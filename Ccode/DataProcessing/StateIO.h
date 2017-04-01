@@ -15,7 +15,7 @@ struct StateIO_Opt
 {
     char s;
     int n;
-    char key[ASCII_MAX];
+    char key[ASCII_MAX]; /*key[c]==1 indicates c is selected*/
 };
 
 struct Matrix_Size
@@ -59,7 +59,6 @@ void Matrix_Parsing(const char*, struct StateIO_Opt *, struct Matrix_Size *);
 /*ToBeFinished*/
 void Posterior_ReadFile(const char*, float***, struct StateIO_Opt *);
 
-/*ToBeFinished*/
 /*If opt==NULL, then lines are counted inside, lines container is malloced inside*/
 int Lines_ReadFile(const char*, char ***, struct StateIO_Opt *);
 
