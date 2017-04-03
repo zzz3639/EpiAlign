@@ -1,1 +1,1 @@
-./CustomFunction.Naive.c
+CustomFunction.Naive.c
