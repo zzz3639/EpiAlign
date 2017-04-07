@@ -14,7 +14,7 @@
 \section{Data representation}
 \subsection{sequence file}
 
-A sequence file is a text file of $l$ lines, each line have only one integer, represent the character(chromatin state) of this site. Usually the file name ends with ".seq".
+A sequence file is a text file of $l$ lines, each line have only one integer, representing the character(chromatin state) of this site. Usually the file name ends with ".seq".
 
 \subsection{compressed sequence file}
 
@@ -42,13 +42,13 @@ In this subsection, a chromatin state sequence is represented by a compressed fo
 
 $$Seq := \{n,S,L\}$$
 
-$n$ is the length of array $S$ and $L$, $S$ is an array of chromatin states, and $L$ an integer array. Inside $L$, $L_i$ is the repeat time of chromatin state $S_i$. For example: $\{[a,b,c],[1,2,3]\} = [abbccc]$ .
+$n$ is the length of array $S$ and $L$, $S$ is an array of chromatin states, and $L$ an integer array. Inside $L$, $L_i$ is the repeat time of chromatin state $S_i$. For example: $\{3,[a,b,c],[1,2,3]\} = [abbccc]$ .
 
 The i'th element of a sequence $Seq$, $[S_i,L_i]$ is a chromatin segment. Our goal here is to align the segments between two sequences.
 
-Given two chromatin state sequences $Seq_1$, $Seq_2$, a match $f$ is a string. On each position of $f$, $f_i$ has three choices: 'm', '$g_1$', or '$g_2$'. 'm' is a match, '$g_1$' is a deletion in $Seq_1$ and '$g_2$' is a deletion in $Seq_2$. The number of 'm' plus the number of '$g_1$' should equal to $n_1$. Symmetrically the number of 'm' plus the number of '$g_2$' should equal to $n_2$. 
+Given two chromatin state sequences $Seq_1=\{n_1,S^{(1)},L^{(1)}\}$, $Seq_2=\{n_2,S^{(2)},L^{(2)}\}$, a match $f$ is a string. On each position of $f$, $f_i$ has three choices: 'm', '$g_1$', or '$g_2$'. 'm' is a match, '$g_1$' is a deletion in $Seq_1$ and '$g_2$' is a deletion in $Seq_2$. The number of 'm' plus the number of '$g_1$' should equal to $n_1$. Symmetrically the number of 'm' plus the number of '$g_2$' should equal to $n_2$. 
 
-Let $u^1$ and $u^2$ be the index of $f$ on $Seq_1$ and $Seq_2$. $u^1_i$ could either be an integer or $\varnothing$.
+Let $u^1$ and $u^2$ be the index of $f$ on $Seq_1$ and $Seq_2$. $u^1_i$ could either be an integer or $\varnothing$, indicate which segment of $Seq1$ $f_i$ is pointing to, or $f_i$ is pointing to a gap.
 
 Now we are able to define the matching score $H$ given $Seq_1$, $Seq_2$ and $f$.
 
@@ -118,6 +118,8 @@ Frequency of the chromatin states are computed outside and passed to the alignme
 
 $$AS^{up,w}(Seq,i) = GramScore^w(Seq,i)*LocalRankScore^w(Seq,i)*LengthScore(Seq,i)$$
 
+In this definition, we aim to quantify how much the neighbourhood area $Seq^{[i-w,i+w]}$ predicts $S_{i}$. The unpredictable segments are thought to be more important than predictable segments.
+
 In the subsequence $Seq^{[i-w,i+w]}$, if neither of pattern $S_{i-1} S_i$ nor $S_i S_{i+1}$ occurs elsewhere, $GramScore^w(Seq,i)=1$, if both patterns occurs elsewhere, $GramScore^w(Seq,i)=4$, otherwise $GramScore^w(Seq,i)=2$.
 
 For $Seq^{[i-w,i+w]}$, we sort the chromatin states occurred in this region by their frequency, $LocalRankScore^w(Seq,i)=1+\frac{rank(S_i)-1}{|\{States\in Seq^{[i-w,i+w]}\}|-1}$
@@ -134,7 +136,7 @@ AS(Seq1,i)+AS(Seq2,j)&S1_i=S2_j\\
 
 \subsection{Gap function}
 
-$$GF(Seq,i) = \epsilon*AS(Seq,i)$$
+$$GF(Seq,i) = -\epsilon*AS(Seq,i)$$
 
 \subsection{Bag of Words alignment}
 
@@ -171,14 +173,14 @@ The script "compile.bash" compiles the C codes into executable files to folder "
 
 Usage: ./TwoRegions.out seqfile1 seqfile2 para
 
-This program implement smith-waterman algorithm to compare two epigenetic state sequences. "seqfile1" and "seqfile2" are two compressed sequence files.
+This program implement smith-waterman algorithm to compare two epigenetic state sequences. "seqfile1" and "seqfile2" are two compressed sequence files. "para" is defined at the beginning of section 3.
 
 The output includes the best local match regions and the matching score.
 
 \subsubsection{DatabaseSearch.out}
 Usage: ./DatabaseSearch.out Paths\_Search Para\_Search Para\_align
 
-This program is doing search of a query sequence set from a database. Both query sequence set and the database are stored as "sequence database". There are examples of "Paths\_Search", "Para\_Search" under "/Ccode/bin". "Para\_align" is the same as the "para" described at the beginning of this section.
+This program is doing search of a query sequence set from a database. Both query sequence set and the database are stored as "sequence database". There are examples of "Paths\_Search", "Para\_Search" under "/Ccode/bin". "Para\_align" is the same as the "para" described at the beginning of section 3.
 
 \subsubsection{DatabaseSearch\_baseline.out}
 
