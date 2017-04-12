@@ -300,7 +300,7 @@ Command:
 
 $$chr_i^{[0,window)}, chr_i^{[step,step+window)}, chr_i^{[2*step,2*step+window)},...$$
 
-\subsubsection{Query database search}
+\subsubsection{Query database search (with baseline database)}
 
 As mentioned in section "Ccode, DatabaseSearch.out", both query and database are stored as "sequence database" defined in section "Data representation, sequence database". Our code iteratively select the sequences in the first database, for each selected sequence, we implement our alignment algorithm on the second database and record the top $k$ hits to the output file corresponding to this selected sequence.
 
@@ -318,8 +318,19 @@ $1.0$ is the $\epsilon$ used by matching function and gap function described in 
 
 The summary is shown at "stdout". If there were $n$ sequences in the query database, the summary would be an $n*(k+2)$ matrix. Form column $1$ to column end are: length of this query sequence(compressed form), best alignment score to baseline set, top $k$ alignment scores to the dataset. 
 
+For each query sequence, an output file is created to record its top hits. Explanation of these files is in "/Ccode/example/Record\_Alignments.annotation"
 
-\subsubsection{Horizontal alignment across an epigenome}
+\subsubsection{Query database search (without baseline database)}
+
+Basically this is identical to the previous example, but baseline database is no longer needed here. The top $k$ alignments for each query sequence are same to the alignments found by the previous example.
+
+Command:
+
+mkdir epigenomechr1alignnative
+
+/Ccode/bin/DatabaseSearchNative.out Paths\_SearchNative.example Para\_SearchNative.example 1.0
+
+\subsubsection{Horizontal alignment across an epigenome (with baseline)}
 
 In this example, we cut the epigenome into small regions first, for each small region, the top hits in this epigenome are searched afterwards. 
 
@@ -333,6 +344,17 @@ mkdir horizontalalignment
 
 "/Ccode/bin/" is the path to the bash script.
 
+\subsubsection{Horizontal alignment across an epigenome (without baseline)}
+
+This example is almost identical to the previous example, but baseline database is no longer needed here. The top $k$ alignments for each segments are same to the alignments found by the previous example.
+
+Command: 
+
+mkdir horizontalalignmentnative
+
+/Ccode/bin/GenomeSearchNative\_Path.sh Para\_GenomeSearchNative.example /Ccode/bin/
+
+"/Ccode/bin/" is the path to the bash script.
 
 \section{matlab code}
 

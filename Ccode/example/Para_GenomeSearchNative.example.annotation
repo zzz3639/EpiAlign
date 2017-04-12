@@ -1,0 +1,10 @@
+window
+step
+a
+b
+k
+"yes" if you want to print the alignments of each genome segments, "no" otherwise
+path to epigenome index
+path to epigenome folder
+output folder
+parameter for alignment

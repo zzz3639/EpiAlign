@@ -1,0 +1,14 @@
+Alignment 1:
+Database: chr: number(from index, start from 0), position: start-end
+Query sequence: start-end
+score: matching score(without baseline), matching score - best baseline match(with baseline).
+Aligned segment 1: query state,database state	query state length,database state length
+Aligned segment 2: query state,database state	query state length,database state length
+....
+Aligned segment k: query state,database state	query state length,database state length
+Alignment 2:
+Alignment 3:
+...
+Alignment n:
+
+
