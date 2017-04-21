@@ -204,7 +204,8 @@ int main(int argc, char **argv)
 	    struct pair_node align_this;
 	    if(strcmp(print_align,"yes")==0)
 	    {
-		for(i=0;i<record_peak;i++){
+                int ii;
+		for(ii=0;ii<record_peak;ii++){
 		    Find_Peak(maxline_trace+h,1,lf+h,&chr_nothing,&pos_chr_this);
 		    if(maxline_trace[h][pos_chr_this]>Score_Zero){
 			/*print this alignment*/

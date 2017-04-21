@@ -322,7 +322,7 @@ For each query sequence, an output file is created to record its top hits. Expla
 
 \subsubsection{Query database search (without baseline database)}
 
-Basically this is identical to the previous example, but baseline database is no longer needed here. The top $k$ alignments for each query sequence are same to the alignments found by the previous example.
+Basically this is identical to the previous example, but baseline database is no longer needed here. The top $k$ alignments (for technical reasons, the program output more than k alignments, only the top k are correct) for each query sequence are same to the alignments found by the previous example.
 
 Command:
 
@@ -355,6 +355,24 @@ mkdir horizontalalignmentnative
 /Ccode/bin/GenomeSearchNative\_Path.sh Para\_GenomeSearchNative.example /Ccode/bin/
 
 "/Ccode/bin/" is the path to the bash script.
+
+\subsubsection{Annotate the outputs of horizontal alignment}
+
+In this example, we use "Algn2AnoBatch.sh" to annotate the outputs of horizontal alignments. For each output file of horizontal alignment, "Algn2AnoBatch.sh" does 3 things: sort the hits by alignment score, coordinating the hits to hg19, and mapping the chromosome index to chromosome name. 
+
+After the annotation, copy the given positions of query sequences and hits into UCSC website for detailed information:
+
+http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual\&source=genome.ucsc.edu
+
+Command: 
+
+/Ccode/bin/Algn2AnoBatch.sh Para\_GenomeSearch.example Para\_Annotation.example
+
+or
+
+/Ccode/bin/Algn2AnoNativeBatch.sh Para\_GenomeSearchNative.example Para\_Annotation.example
+
+For each output file of horizontal alignment, the annotated file is under the same folder with the suffix ".anno".
 
 \section{matlab code}
 
