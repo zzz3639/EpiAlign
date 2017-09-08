@@ -66,10 +66,15 @@ int main(int argc, char **argv)
     /*Do traceback*/
     struct pair_node align_this;
     Trace_Even(map_trace,p1,p2,&align_this);
-    printf("seq1:%d-%d, seq2:%d-%d\n",sseq1_cumsum[align_this.next->p1],sseq1_cumsum[p1]-1,sseq2_cumsum[align_this.next->p2],sseq2_cumsum[p2]-1);
-    printf("Score=%f\n",map_score[p2][p1]);
-    Print_Alignment_Sseq_Even(&align_this, sseq1, sseq2, sseq1_num, sseq2_num, stdout);
-
+    if(align_this.next!=NULL){
+	printf("seq1:%d-%d, seq2:%d-%d\n",sseq1_cumsum[align_this.next->p1],sseq1_cumsum[p1]-1,sseq2_cumsum[align_this.next->p2],sseq2_cumsum[p2]-1);
+	printf("Score=%f\n",map_score[p2][p1]);
+	Print_Alignment_Sseq_Even(&align_this, sseq1, sseq2, sseq1_num, sseq2_num, stdout);
+    }
+    else{
+	printf("no possible match found\n");
+	printf("Score=%f\n",map_score[p2][p1]);
+    }
 
 /*Free memory*/
     Custom_Free(opt);
