@@ -38,26 +38,23 @@ for i=1:L
 end
 
 flength = fopen([patht,'length'],'w');
-for i=0:numrecord-1
-    fprintf(flength,[num2str(Mtop(end-i,1)),'\n']);
-end
-fclose(flength);
-
 fidx = fopen([patht,'index'],'w');
 fpos = fopen([patht,'position'],'w');
 flist = fopen([patht,'tablelist'],'w');
 
 i = 0;
 while i<numrecord
-    C = importdata([patht,'chr',chromstr{Mtop(end-i,6)},'_a',num2str(Mtop(end-i,7)*step),'b',num2str(Mtop(end-i,7)*step+win),'.anno'],'\n');
+    C = importdata([pathf,chromnames{Mtop(end-i,6)},'/a',num2str(Mtop(end-i,7)*step),'b',num2str(Mtop(end-i,7)*step+win),'.sseq.anno'],'\n');
     strthis = C{9};
     ks = strfind(strthis,' ');
     kq = strfind(strthis,'Query:');
     kd = strfind(strthis,'Database:');
     if length(kq)==0
+        i=i+1;
         continue;
     end
     system(['cp ',pathf,chromnames{Mtop(end-i,6)},'/a',num2str(Mtop(end-i,7)*step),'b',num2str(Mtop(end-i,7)*step+win),'.sseq.anno ',patht,'chr',chromstr{Mtop(end-i,6)},'_a',num2str(Mtop(end-i,7)*step),'b',num2str(Mtop(end-i,7)*step+win),'.anno']);
+    fprintf(flength,[num2str(Mtop(end-i,1)),'\n']);
     fprintf(fidx,['chr',chromstr{Mtop(end-i,6)},'_a',num2str(Mtop(end-i,7)*step),'b',num2str(Mtop(end-i,7)*step+win),'.anno\n']);
     fprintf(fpos,strthis(kq+6:ks));
     fprintf(fpos,[strthis(kd+9:end),'\n']);
@@ -69,6 +66,7 @@ end
 fclose(fidx);
 fclose(fpos);
 fclose(flist);
+fclose(flength);
 
 end
 

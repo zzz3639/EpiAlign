@@ -6,7 +6,7 @@ k
 don't change, will be removed
 path to epigenome index
 path to epigenome folder
-path to fakeepigenome index
-path to fakeepigenome folder
+path to fakeepigenome index, more than one fake epigenome is allowed, index paths should be seperated by character 'space'.
+path to fakeepigenome folder, more than one fake epigenome is allowed, folder paths should be seperated by character 'space'.
 output folder
 parameter for alignment

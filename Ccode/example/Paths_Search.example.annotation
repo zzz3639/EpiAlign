@@ -2,6 +2,6 @@ path to query sequences index
 path to query sequences folder
 path to database index
 path to database folder
-path to baseline database index
-path to baseline database folder
+path to baseline database index, more than one baseline database is allowed, paths to the indexes should be seperated by character 'space' .
+path to baseline database folder, more than one baseline database is allowed, paths to the folders should be seperated by character 'space' .
 output folder
