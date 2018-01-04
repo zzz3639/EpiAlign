@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ExePath=$5
+
 index=0
 while read line ; do
     NAMES[$index]="$line"
@@ -14,6 +16,6 @@ for i in ${NAMES[@]}; do
 done
 
 for i in ${NAMES[@]}; do
-    FakeChromosomeGenerator.out $2$i $4${i%txt.Sseq}rand.Sseq
+    ${ExePath}FakeChromosomeGenerator.out $2$i $4${i%txt.Sseq}rand.Sseq
 done
 

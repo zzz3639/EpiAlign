@@ -111,8 +111,8 @@ int main(int argc, char **argv)
     /*semitation*/
     char **Idxr_names;
     char **Pr_names;
-    Idxr_names = (char**)malloc(sizeof(char*)*j);
-    Pr_names = (char**)malloc(sizeof(char*)*j);
+    Idxr_names = (char**)malloc(sizeof(char*)*n_rand);
+    Pr_names = (char**)malloc(sizeof(char*)*n_rand);
     for(i=0;i<n_rand;i++){
 	Idxr_names[i] = (char*)malloc(sizeof(char)*FileNameLength_MAX);
 	Pr_names[i] = (char*)malloc(sizeof(char)*FileNameLength_MAX);
@@ -128,6 +128,7 @@ int main(int argc, char **argv)
 	}
 	i++;
     }
+    Idxr_names[j][i-k] = '\0';
     i=0; j=0; k=0;
     while((c=Pr[i])!='\0'){
 	Pr_names[j][i-k] = Pr[i];
@@ -138,7 +139,7 @@ int main(int argc, char **argv)
 	}
 	i++;
     }
-    
+    Pr_names[j][i-k] = '\0';
 
 /*read filenames*/
     int nf;
