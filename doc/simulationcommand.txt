@@ -1,0 +1,19 @@
+command: 
+
+bash -x EpiBLAST_mix/Ccode/bin/FakeGenomeGenerator.sh EpiBLAST_mix/StateDatabase/core_15/E003Files EpiBLAST_mix/StateDatabase/core_15/E003/ EpiBLAST_mix/StateDatabase/core_15/E003randFiles EpiBLAST_mix/StateDatabase/core_15/E003rand/ EpiBLAST_mix/Ccode/bin/
+
+bash -x EpiBLAST_mix/Ccode/bin/FakeGenomeGenerator.sh EpiBLAST_mix/StateDatabase/core_15/E003Files EpiBLAST_mix/StateDatabase/core_15/E003/ EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003randFiles_1 EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003rand_1/ EpiBLAST_mix/Ccode/bin/
+bash -x EpiBLAST_mix/Ccode/bin/FakeGenomeGenerator.sh EpiBLAST_mix/StateDatabase/core_15/E003Files EpiBLAST_mix/StateDatabase/core_15/E003/ EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003randFiles_2 EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003rand_2/ EpiBLAST_mix/Ccode/bin/
+bash -x EpiBLAST_mix/Ccode/bin/FakeGenomeGenerator.sh EpiBLAST_mix/StateDatabase/core_15/E003Files EpiBLAST_mix/StateDatabase/core_15/E003/ EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003randFiles_3 EpiBLAST_mix/StateDatabase/core_15/E003randbatch/E003rand_3/ EpiBLAST_mix/Ccode/bin/
+
+
+~/EpiBLAST_mix/Ccode/bin/MixGenomes.sh ~/EpiBLAST_mix/paras/mixE003para1 ~/EpiBLAST_mix/Ccode/bin/
+~/EpiBLAST_mix/Ccode/bin/MixGenomes.sh ~/EpiBLAST_mix/paras/mixE003para2 ~/EpiBLAST_mix/Ccode/bin/
+
+screen -S GSmixE003
+cd ~/EpiBLAST_mix/Ccode/bin
+./GenomeSearch_Path.sh ~/EpiBLAST_mix/paras/GSmixE003para /home/zzz/EpiBLAST_mix/Ccode/bin/
+
+screen -S GSmixE003rand
+cd ~/EpiBLAST_mix/Ccode/bin
+./GenomeSearch_Path.sh ~/EpiBLAST_mix/paras/GSmixE003randpara /home/zzz/EpiBLAST_mix/Ccode/bin/
