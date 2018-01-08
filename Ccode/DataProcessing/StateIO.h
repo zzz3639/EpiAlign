@@ -8,7 +8,7 @@
 #include"EpiBLASTConstant.h"
 
 #define ASCII_MAX 128
-#define FileNameLength_MAX 200
+#define FileNameLength_MAX 500
 #define LineStore_MAX 200
 
 struct StateIO_Opt

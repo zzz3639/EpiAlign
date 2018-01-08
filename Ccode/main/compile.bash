@@ -7,3 +7,4 @@ g++-5 -std=c++11 FakeChromosomeGenerator.cpp WatermanFun.c StateIO.c -O3 -o ../b
 gcc -O3 DatabaseSearch_baseline1.c WatermanFun.c StateIO.c -lm -o ../bin/DatabaseSearch_baseline.out
 gcc -O3 unique_sseq.c StateIO.c WatermanFun.c -o ../bin/unique_sseq.out
 gcc -O3 mix_chromosomes.c StateIO.c WatermanFun.c -o ../bin/mix_chromosomes.out
+gcc -O3 SortChrIndex.c StateIO.c -o ../bin/SortChrIndex.out
