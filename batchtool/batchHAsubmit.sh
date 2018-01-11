@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #This script automatically generates submit bash script for a list of epigenomes, uses "screen" command to submit jobs on a server
-#Usage: batchidxsort.sh paths pathsubmitbash epigenomeindex ExePath
+#Usage: batchHAsubmit.sh paths pathsubmitbash epigenomeindex ExePath
 
 ExePath=$4
 submitbashfile=$2
@@ -25,4 +25,6 @@ do
     parapaththis=${pathsubmit[0]}GS${epigenomeindex[$i]}para
     echo screen -dmS GS${epigenomeindex[$i]} ${pathsubmit[1]}GenomeSearch_Path.sh ${parapaththis} ${pathsubmit[1]} >> ${submitbashfile}
 done 
+
+chmod u+x ${submitbashfile}
 

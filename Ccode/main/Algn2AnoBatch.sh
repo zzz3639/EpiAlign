@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Usage: Algn2AnoBatch.sh ParaGenomeSearch ParaAnno ExePath
+ExePath=$3
 index=0
 while read line ; do
     ParaGenome[$index]="$line"
@@ -38,7 +40,7 @@ for i in ${Names[@]}; do
         echo ${ParaAnno[2]} >>${ParaGenome[10]}ParaAnno.temp
         echo ${ParaGenome[6]} >>${ParaGenome[10]}ParaAnno.temp
         echo >${ParaGenome[10]}Prefix.temp
-        Algn2Ano.out ${ParaGenome[10]}ParaAnno.temp ${ParaGenome[10]}Prefix.temp ${ParaGenome[10]}${i}/a${a}b${b}.sseq.algn >${ParaGenome[10]}${i}/a${a}b${b}.sseq.anno
+        ${ExePath}Algn2Ano.out ${ParaGenome[10]}ParaAnno.temp ${ParaGenome[10]}Prefix.temp ${ParaGenome[10]}${i}/a${a}b${b}.sseq.algn >${ParaGenome[10]}${i}/a${a}b${b}.sseq.anno
         a=$(($a+${ParaGenome[1]}))
         b=$(($b+${ParaGenome[1]}))
     done
