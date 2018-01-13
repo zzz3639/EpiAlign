@@ -46,6 +46,7 @@ do
         chrstr[$j]=${chrstrline[3]}
         echo ${chrstr[$j]}
     done
+    unset IFS
     
     scorefull=${GSoutputpath}${epigenomeidx[$i]}_full.score
     rm ${scorefull}
@@ -93,8 +94,8 @@ do
         copys=$((${GSparathis[1]}*(${copylinethis[1]}-1)))
         copyt=$((${copys}+${GSparathis[0]}))
         copythis=${GSoutputpath}${dbthisindex[${copylinethis[0]}]}/a${copys}b${copyt}
-        cp ${copythis}.sseq.algn ${topkfolder}/
-        cp ${copythis}* ${topkfolder}/
+        cp ${copythis}.sseq.algn ${topkfolder}/${chrstr[${copylinethis[0]}]}a${copys}b${copyt}.sseq.algn
+        cp ${copythis}.sseq.anno ${topkfolder}/${chrstr[${copylinethis[0]}]}a${copys}b${copyt}.sseq.anno
         echo ${copythis} >>${copyfilesidx}
     done
 
@@ -113,7 +114,8 @@ do
         copys=$((${GSparathis[1]}*(${copylinethis[1]}-1)))
         copyt=$((${copys}+${GSparathis[0]}))
         copythis=${GSoutputpath}${dbthisindex[${copylinethis[0]}]}/a${copys}b${copyt}
-        cp ${copythis}* ${topknopfolder}/
+        cp ${copythis}.sseq.algn ${topknopfolder}/${chrstr[${copylinethis[0]}]}a${copys}b${copyt}.sseq.algn
+        cp ${copythis}.sseq.anno ${topknopfolder}/${chrstr[${copylinethis[0]}]}a${copys}b${copyt}.sseq.anno
         echo ${copythis} >>${copynopfilesidx}
     done
 

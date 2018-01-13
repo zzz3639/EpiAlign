@@ -1,0 +1,3 @@
+Top k non-overlapping segments from horizontal alignment:
+
+Horizontal alignment was performed on: 1, true epigenome; 2, randomized epigenome; 3, two mixed epigenomes. K Segments with the highest alignment score are extracted separately from each epigenome. On these segments, the true epigenome has highest score, two mixed epigenomes are basically the same, still higher than the randomized epigenome.
