@@ -537,7 +537,7 @@ int main(int argc, char **argv)
 	free(sseq_cumnum[i]);
     }
     free(sseq_cumnum);
-    for(i=0;i<nr;i++){
+    for(i=0;i<nq;i++){
 	free(sseq_query_cumnum[i]);
     }
     free(sseq_query_cumnum);

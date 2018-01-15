@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 	    sseq_query_cumnum[t][i+1] = sseq_query_cumnum[t][i] + sseq_num_query[t][i];
 	}
     }
-/*Do fitting for each region*/ /*we are here*/
+/*Do fitting for each region*/
     int *sq;
     sq = (int*)malloc(sizeof(int)*nq);
     float **score_query;
@@ -424,13 +424,21 @@ int main(int argc, char **argv)
 	score_data[i] = (float*)malloc(sizeof(float)*SWF_MAX(cf[i]/wk+1-ww,0));
 	sf[i] = SWF_MAX(cf[i]/wk+1-ww,0);
     }
-    int *sr;
-    sr = (int*)malloc(sizeof(int)*nr);
-    float **score_rand;
-    score_rand = (float**)malloc(sizeof(float*)*nr);
-    for(i=0;i<nr;i++){
-	score_rand[i] = (float*)malloc(sizeof(float)*SWF_MAX(cr[i]/wk+1-ww,0));
-	sr[i] = SWF_MAX(cr[i]/wk+1-ww,0);
+    int **sr;
+    sr = (int**)malloc(sizeof(int*)*n_rand);
+    for(i=0;i<n_rand;i++){
+	sr[i] = (int*)malloc(sizeof(int)*nr[i]);
+    }
+    float ***score_rand;
+    score_rand = (float***)malloc(sizeof(float**)*n_rand);
+    for(i=0;i<n_rand;i++){
+	score_rand[i] = (float**)malloc(sizeof(float*)*nr[i]);
+    }
+    for(j=0;j<n_rand;j++){
+	for(i=0;i<nr[j];i++){
+	    sr[j][i] = SWF_MAX(cr[j][i]/wk+1-ww,0);
+	    score_rand[j][i] = (float*)malloc(sizeof(float)*sr[j][i]);
+	}
     }
     int k;
     int r;
@@ -465,6 +473,8 @@ int main(int argc, char **argv)
     unsigned short *sseq_num_db_this;
     int l_db_this;
     char annonum[FileNameLength_MAX];
+    int ir;
+    /*iteration begins*/
     for(t=0;t<nq;t++){
         printf("\n\nRunning, this is query seq %d\n\n",t);
 	name_fullpath[0] = '\0';
@@ -486,41 +496,45 @@ int main(int argc, char **argv)
 	}
         while(boq<=cq[t]){
             printf("Segment %d\n",aiq);
-	    /*initialize*/
 	    /*find state sequence of this region*/
             for(i=aoq;i<boq;i++){
                 seq_q_this[i-aoq] = seq_q_temp[i];
 	    }
-	    /*do fitting for this region on randomized dataset*/
-	    for(r=0;r<nr;r++){
-		seq_r_temp = (unsigned char*)malloc(sizeof(unsigned char)*cr[r]);
-                k=0;
-		for(i=0;i<lr[r];i++){
-		    for(j=0;j<sseq_num_rand[r][i];j++){
-			seq_r_temp[k] = sseq_rand[r][i];
-			k++;
+	    /*do fitting on randomized epigenomes*/
+            maxscore_rand = 0.0;
+            for(ir=0;ir<n_rand;ir++){
+		/*do fitting for this region on randomized dataset*/
+		for(r=0;r<nr[ir];r++){
+		    seq_r_temp = (unsigned char*)malloc(sizeof(unsigned char)*cr[ir][r]);
+		    k=0;
+		    for(i=0;i<lr[ir][r];i++){
+			for(j=0;j<sseq_num_rand[ir][r][i];j++){
+			    seq_r_temp[k] = sseq_rand[ir][r][i];
+			    k++;
+			}
 		    }
-		}
-		aor = 0;
-		bor = wm;
-		air = aor/wk;
-		bir = bor/wk;
-		while(bor<=cr[r]){
-		    for(i=aor;i<bor;i++){
-			seq_r_this[i-aor] = seq_r_temp[i];
+		    aor = 0;
+		    bor = wm;
+		    air = aor/wk;
+		    bir = bor/wk;
+		    while(bor<=cr[ir][r]){
+			for(i=aor;i<bor;i++){
+			    seq_r_this[i-aor] = seq_r_temp[i];
+			}
+			score_rand[ir][r][air] = score_baseline(seq_r_this,wm,seq_q_this,wm,fit_model,StateMax);
+			/*printf("\n%d\t%d\t%d\n",r,cr[r],air);*/
+			aor += wk;
+			bor += wk;
+			air += 1;
+			bir += 1;
 		    }
-		    score_rand[r][air] = score_baseline(seq_r_this,wm,seq_q_this,wm,fit_model,StateMax);
-		    /*printf("\n%d\t%d\t%d\n",r,cr[r],air);*/
-		    aor += wk;
-		    bor += wk;
-		    air += 1;
-		    bir += 1;
+		    free(seq_r_temp);
 		}
-		free(seq_r_temp);
+		/*find best score for randomized sequence*/
+		Find_Peak(score_rand[ir], nr[ir], sr[ir], &chr_rand, &pos_rand);
+		maxscore_rand += score_rand[ir][chr_rand][pos_rand];
 	    }
-	    /*find best score for randomized sequence*/
-            Find_Peak(score_rand, nr, sr, &chr_rand, &pos_rand);
-            maxscore_rand = score_rand[chr_rand][pos_rand];
+	    maxscore_rand = maxscore_rand/n_rand;
 	    /*do fitting for this region on true dataset*/
             for(r=0;r<nf;r++){
 		seq_db_temp = (unsigned char*)malloc(sizeof(unsigned char)*cf[r]);
@@ -643,7 +657,19 @@ int main(int argc, char **argv)
     free(cr);
     free(sf);
     free(sq);
+    for(i=0;i<n_rand;i++){
+	free(sr[i]);
+    }
     free(sr);
+    for(i=0;i<n_rand;i++){
+	for(j=0;j<nr[i];j++){
+	    free(score_rand[i][j]);
+	}
+    }
+    for(i=0;i<n_rand;i++){
+	free(score_rand[i]);
+    }
+    free(score_rand);
     free(Idxr);
     free(Pr);
     free(seq_q_this);
@@ -656,6 +682,7 @@ int main(int argc, char **argv)
     }
     free(Idxr_names);
     free(Pr_names);
+    free(nr);
     return 1;
 }
 

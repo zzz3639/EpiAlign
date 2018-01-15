@@ -389,7 +389,7 @@ void Custom_Free(void *opt)
 
 float Custom_MatchingFunction(unsigned char a, unsigned char b, int i, int j, void *opt)
 {
-    return (a==b)?(*(((struct CF_pair*)opt)->p1+i))*2.0:(-(*(((struct CF_pair*)opt)->p1+i))-(*(((struct CF_pair*)opt)->p2+j)))*epsilon;
+    return (a==b)?(*(((struct CF_pair*)opt)->p1+i)+(*(((struct CF_pair*)opt)->p2+j))):(-(*(((struct CF_pair*)opt)->p1+i))-(*(((struct CF_pair*)opt)->p2+j)))*epsilon;
 }
 
 float Custom_GapFunction(float alpha, int i, char s, void *opt)
