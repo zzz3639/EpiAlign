@@ -39,14 +39,15 @@ do
     done < "${GSparathis[6]}"
 
     unset chrstr
-    IFS="_"
     for ((j=0; j<index1; ++j))  
     do  
-        read -a chrstrline <<<"${dbthisindex[$j]}"
-        chrstr[$j]=${chrstrline[3]}
+        chrstrline1=${dbthisindex[$j]#*_chr}
+        chrstrline2=${chrstrline1#*_}
+        ((schrstr=${#dbthisindex[$j]}-${#chrstrline1}-3))
+        ((lchrstr=${#chrstrline1}-${#chrstrline2}+2))
+        chrstr[$j]=${dbthisindex[$j]:$schrstr:lchrstr}
         echo ${chrstr[$j]}
     done
-    unset IFS
     
     scorefull=${GSoutputpath}${epigenomeidx[$i]}_full.score
     rm ${scorefull}
