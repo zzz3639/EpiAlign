@@ -1,6 +1,6 @@
 window
 step
-a
+a (a,b for top k hit recording, in order to prevent two hits too close to each other)
 b
 k
 don't change, will be removed

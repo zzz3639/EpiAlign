@@ -5,4 +5,7 @@ ln -s ../main/GenomeSearchNative_Path.sh ../bin/GenomeSearchNative_Path.sh
 ln -s ../main/GenomeSearch_Path.sh ../bin/GenomeSearch_Path.sh
 ln -s ../main/GenomeSearch.sh ../bin/GenomeSearch.sh
 ln -s ../main/Algn2AnoBatch.sh ../bin/Algn2AnoBatch.sh
+ln -s ../main/Algn2AnoIdx.sh ../bin/Algn2AnoIdx.sh
 ln -s ../main/Algn2AnoNativeBatch.sh ../bin/Algn2AnoNativeBatch.sh
+ln -s ../main/DatabaseSearch_baseline_mkfolder.sh ../bin/DatabaseSearch_baseline_mkfolder.sh
+ln -s ../main/DatabaseSearch_baseline.sh ../bin/DatabaseSearch_baseline.sh

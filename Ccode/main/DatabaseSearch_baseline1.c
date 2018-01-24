@@ -15,7 +15,7 @@ void Remove_Peak(float **maxline, int *L, int h, int p, int l2, int dist_peak_l,
     int l;
     int u;
     l = SWF_MAX(p-l2*dist_peak_l,0);
-    u = SWF_MIN(p+l2*dist_peak_u,L[h]);
+    u = SWF_MIN(p+l2*dist_peak_u,L[h]-1);
     int i;
     for(i=l;i<=u;i++){
 	maxline[h][i] = -1.0*STATE_MAX;
@@ -125,7 +125,7 @@ int pick_sseq(unsigned char *sseq, unsigned char *sseq_num, int n, unsigned char
 int main(int argc, char **argv)
 {
     if(argc<3){
-	printf("\nUsage:\n./run Path_Search_baseline Para_Search_baseline Para_Annotation_baseline\n");
+	printf("\nUsage:\n./run Path_Search_baseline Para_Search_baseline\n");
 	return 1;
     }
 

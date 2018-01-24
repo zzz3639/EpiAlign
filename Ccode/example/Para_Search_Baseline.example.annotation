@@ -1,0 +1,6 @@
+window
+step
+a (for top k counting, if segment s has been selected, a*window before s and b*window after s should not be selected in top k)
+b
+top k hits for one segment to report
+"compressed" or "normal", weither or not compress the state sequence when counting state frequency vector

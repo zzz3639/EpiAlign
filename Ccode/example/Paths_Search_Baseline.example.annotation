@@ -1,0 +1,7 @@
+Path to query index
+Path to query folder
+Path to database index
+Path to database folder
+Path to baseline epigenome indexes, indexes are separated by " "
+Path to baseline epigenome folders, folders are separated by " "
+Path to output folder
